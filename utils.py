@@ -22,7 +22,8 @@ def load_datadic_from_tfrecords(path, _Datasets, env_name: str, feature_map: dic
     for f in listdir(path):
         file_path = join(path, f)
         if isfile(file_path):
-            file_number = int(f[:4])
+            #file_number = int(f[:4])
+            file_number = int(f[-21:-17])  # ULRIK 010524 f[:4])
             if file_number >= record_range[0] and file_number < record_range[1]:
                 tfrecord_files.append(file_path)
     raw_dataset = tf.data.TFRecordDataset(tfrecord_files)

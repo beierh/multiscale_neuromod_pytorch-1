@@ -279,22 +279,26 @@ if __name__ == '__main__':
         lr_scheduler = LRScheduler(LR_MAX, LR_MIN, N_EPOCHS//LR_UPDATE_FREQ + 1)
         lr_all = lr_scheduler.get_all_lr()
 
-    start_epoch = 995
-    # if trying to resume training from a checkpoint, comment otherwise
-    checkpoint = torch.load(CHECKPOINT_PATH + f'model_{start_epoch:04d}.pt')
-    for key in checkpoint:
-        print(f'key {key}')
-    start_epoch = checkpoint['epoch'] + 1
-    gridtorchmodel.load_state_dict(checkpoint['model_state_dict'])
-    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    # epoch_losses = []
-    # test_losses = []
-    # epoch_pc_losses = []
-    # epoch_hd_losses = []
-    epoch_losses = checkpoint['epoch_losses']
-    test_losses = checkpoint['test_losses']
-    epoch_pc_losses = checkpoint['epoch_pc_losses']
-    epoch_hd_losses = checkpoint['epoch_hd_losses']
+    start_epoch = 0#995
+    if start_epoch>0:
+        # if trying to resume training from a checkpoint, comment otherwise
+        checkpoint = torch.load(CHECKPOINT_PATH + f'model_{start_epoch:04d}.pt')
+        for key in checkpoint:
+            print(f'key {key}')
+        start_epoch = checkpoint['epoch'] + 1
+        gridtorchmodel.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+        epoch_losses = checkpoint['epoch_losses']
+        test_losses = checkpoint['test_losses']
+        epoch_pc_losses = checkpoint['epoch_pc_losses']
+        epoch_hd_losses = checkpoint['epoch_hd_losses']
+    else:
+        epoch_losses = []
+        test_losses = []
+        epoch_pc_losses = []
+        epoch_hd_losses = []
+
 
     # scheduled_dropouts = np.load('dropouts.npy').tolist()
     # print(f'loaded current dp {scheduled_dropouts[-1]}')
@@ -383,7 +387,9 @@ if __name__ == '__main__':
             train_loss.backward()
 
             # Gradient Clipping
-            torch.nn.utils.clip_grad_value_(params, GRAD_CLIPPING)
+            # Gradient Clipping  - UB commented out, not needed?????***
+            torch.nn.utils.clip_grad_norm_(params, GRAD_CLIPPING)
+            # original           torch.nn.utils.clip_grad_value_(params, GRAD_CLIPPING)
 
             optimizer.step()
 
